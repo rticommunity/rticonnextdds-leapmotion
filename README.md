@@ -1,8 +1,6 @@
 rticonnextdds-leapmotion
 ========================
 
-rticonnextdds-leapmotion
-
 This project represents the code discussed in the RTI Community Forum at
 
 http://community.rti.com/howto/howto-use-rti-connext-dds-leap-motion-controller 
