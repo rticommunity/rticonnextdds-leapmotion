@@ -17,6 +17,15 @@ modification history
 #include "Leap.h"
 #include <cctype>
 
+/* Noise */
+#define LEAP_POINTABLES_TO_DDS
+#define LEAP_HANDS_TO_DDS
+#define LEAP_GESTURES_TO_DDS
+
+#define LEAP_APPNOUNCE_FRAMERATE
+#define LEAP_APPNOUNCE_COUNTS
+
+/* Entities */
 struct DDSEntities {
     DDSDomainParticipant * p;
     DDS_Long               domainId;
@@ -38,6 +47,7 @@ struct DDSEntities {
     DDS_Long               gesturesCounter;
 };
 
+/* Cleanup */
 static int app_shutdown(
     DDSEntities *entities)
 {
@@ -97,6 +107,7 @@ static int app_shutdown(
     return status;
 }
 
+/* Leap Frame handler/listener */
 class LeapListener : public Leap::Listener {
 public:
     DDSEntities * entities;
@@ -279,25 +290,36 @@ void LeapListener::onFrame(const Leap::Controller& controller)
     static std::time_t sepoch = std::time(NULL);
     static std::time_t now = std::time(NULL);
 
-    DDS_Long count = 0;
-    count += handlePointables(controller);
-    // count += (100 * handleHands(controller));
-    // count += (10000 * handleGestures(controller));
+    DDS_Long i_count = 0;
+    DDS_Long h_count = 0;
+    DDS_Long g_count = 0;
+#ifdef LEAP_POINTABLES_TO_DDS
+    i_count += handlePointables(controller);
+#endif
+#ifdef LEAP_HANDS_TO_DDS
+    h_count += (100 * handleHands(controller));
+#endif
+#ifdef LEAP_GESTURES_TO_DDS
+    g_count += (10000 * handleGestures(controller));
+#endif
+#ifdef LEAP_ANNOUNCE_COUNTS
     frames++;
-    if ((frames % 1000) == 0) { 
-        // printf("Frames %i, Count:  %i\n", frames, count); 
+    if ((frames % 3000) == 0) { 
+        printf("Frames %i, Counts: [i] %i [h] %i [g] %i\n", frames, i_count, h_count, g_count); 
     } 
-    //if ((frames % 100) == 0) { 
-        std::time_t check = std::time(NULL);
-        if (check != now) {
-            now = check;
-            DDS_Double fps = (1000.0) * ((now-sepoch)/(double)frames);
-            printf("sepoch: %li, now: %li, frames: %i, FPS:  %f\n", sepoch, now, frames, fps); 
-        }
-    //}
+#endif
+#ifdef LEAP_ANNOUNCE_FRAMERATE
+    std::time_t check = std::time(NULL);
+    if (check != now) {
+        now = check;
+        DDS_Double fps = (1000.0) * ((now-sepoch)/(double)frames);
+        printf("sepoch: %li, now: %li, frames: %i, FPS:  %f\n", sepoch, now, frames, fps); 
+    }
+#endif
 }
 
 
+/* Setup: Participant */
 extern "C" DDSDomainParticipant * publisher_main(int domainId, DDSEntities * entities)
 {
     DDS_ReturnCode_t retcode;
@@ -392,6 +414,7 @@ extern "C" DDSDomainParticipant * publisher_main(int domainId, DDSEntities * ent
     return (participant);
 }
 
+/* Setup: Writers */
 extern "C" void writer_main(DDSEntities *entities) {
     DDSDataWriter *writer = NULL;
     
@@ -475,29 +498,6 @@ extern "C" void writer_main(DDSEntities *entities) {
     return;
 }
 
-#if defined(RTI_WINCE)
-int wmain(int argc, wchar_t** argv)
-{
-    int domainId = 0;
-    int sample_count = 0; /* infinite loop */ 
-    
-    if (argc >= 2) {
-        domainId = _wtoi(argv[1]);
-    }
-    if (argc >= 3) {
-        sample_count = _wtoi(argv[2]);
-    }
-
-     /* Uncomment this to turn on additional logging
-    NDDSConfigLogger::get_instance()->
-        set_verbosity_by_category(NDDS_CONFIG_LOG_CATEGORY_API, 
-                                  NDDS_CONFIG_LOG_VERBOSITY_STATUS_ALL);
-    */
-    
-    return publisher_main(domainId, sample_count);
-}
- 
-#elif !(defined(RTI_VXWORKS) && !defined(__RTP__)) && !defined(RTI_PSOS)
 int main(int argc, char *argv[])
 {
     int domainId = 112;
@@ -550,28 +550,10 @@ int main(int argc, char *argv[])
     }
 */
 
-    /* Delete data sample */
-    PointableTypeTypeSupport::delete_data(entities.i_pointables);
-
     /* Delete all entities */
     app_shutdown(&entities);
 
     return(0);
 }
-#endif
 
-#ifdef RTI_VX653
-const unsigned char* __ctype = *(__ctypePtrGet());
-
-extern "C" void usrAppInit ()
-{
-#ifdef  USER_APPL_INIT
-    USER_APPL_INIT;         /* for backwards compatibility */
-#endif
-    
-    /* add application specific code here */
-    taskSpawn("pub", RTI_OSAPI_THREAD_PRIORITY_NORMAL, 0x8, 0x150000, (FUNCPTR)publisher_main, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-   
-}
-#endif
 

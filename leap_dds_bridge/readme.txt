@@ -8,15 +8,22 @@ Determine your arch string (see $NDDSHOME/lib, and use one of the available dire
 
 Call rtiddsgen to generate the Type files:
 
-% rtiddsgen -language c++ -inputIdl LeapType.idl -ppDisable -replace -example <arch>
+% rtiddsgen -language c++ -inputIdl LeapTypes.idl -ppDisable -replace -example <arch>
 
 This will generate all the necessary Type, TypeSupport and strongly typed writers necessary in the bridge code.
+
+
+
+The LeapDDSBridge.cxx file includes several #defines which can be used to reduce the noise level.  You can undef pointables, hands and/or gestures, and also prevent the repeating information to the console about counts and frame rates.  
+
+
+
 
 For Windows:
 
 Open the generated .sln and delete one of the projects, for example the Subscriber project.  
 Change the name of the remaining project to "LeapDDSBridge" (or as desired).
-Add the LeapDDSBridge.cxx file from this directory to the Source Files folder.
+Replace the LeapTypes_publisher.cxx file in the Source Files folder with the LeapDDSBridge.cxx file from this directory.
 Right-click the LeapDDSBridge project and change the properties:
     Configuration:  All Configurations
     C/C++:
