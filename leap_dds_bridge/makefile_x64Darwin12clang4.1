@@ -22,10 +22,14 @@
 #
 # modification history
 # --------------------
-# 01a,2014-03-01,rip reworked for bridge
+# 01c,2014-04-09,rip added LEAPHOME variable
+# 01b,2014-03-01,rip reworked for bridge
 # 01a,2014-03-01,rtiddsgen makefile_LeapTypes_x64Darwin12clang4.1
 # 
 ######################################################################
+# Set LEAPHOME to point at the SDK directory where Leap's "include" and 
+# "lib" subdirectories are to be found
+LEAPHOME = /Path/To/LeapSDK
 
 c_cc_x64Darwin12clang4.1 = clang
 c_cc_flags_x64Darwin12clang4.1 = -m64
@@ -37,11 +41,11 @@ cxx_ld_x64Darwin12clang4.1 = clang++
 cxx_ld_flags_x64Darwin12clang4.1 = -m64
 syslibs_x64Darwin12clang4.1 = -ldl -lm -lpthread
 DEFINES_ARCH_SPECIFIC = -DRTI_UNIX -DRTI_DARWIN -DRTI_DARWIN10 -DRTI_64BIT
-LEAP_LIBRARY := ../lib/libLeap.dylib
+LEAP_LIBRARY := $(LEAPHOME)/lib/libLeap.dylib
 
 DEFINES = $(DEFINES_ARCH_SPECIFIC) $(cxx_DEFINES_ARCH_SPECIFIC) 
 
-INCLUDES = -I. -I$(NDDSHOME)/include -I$(NDDSHOME)/include/ndds -I../include
+INCLUDES = -I. -I$(NDDSHOME)/include -I$(NDDSHOME)/include/ndds -I../include -I$(LEAPHOME)/include
 
 LIBS = -L$(NDDSHOME)/lib/x64Darwin12clang4.1 \
        -lnddscppz -lnddscz -lnddscorez $(syslibs_x64Darwin12clang4.1)
