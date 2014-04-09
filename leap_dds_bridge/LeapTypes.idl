@@ -1,0 +1,92 @@
+enum RelativeToList {
+  PELETON = 0,
+  FRONT_MOST,
+  LEFT_MOST,
+  RIGHT_MOST
+};
+
+enum Zone {
+  ZONE_NONE       = 0,  // The Pointable object is too far from the plane
+  ZONE_HOVERING   = 1,  // The Pointable object is close to, but not touching
+  ZONE_TOUCHING   = 2   // The Pointable has penetrated the plane.
+};
+
+enum Type {
+  TYPE_INVALID    = 0xFFFFFFFF, /**< An invalid type. */
+  TYPE_SWIPE      = 1,  /**< A straight movement by the hand with fingers extended. */
+  TYPE_CIRCLE     = 4,  /**< A circular movement by a finger. */
+  TYPE_SCREEN_TAP = 5,  /**< A forward tapping movement by a finger. */
+  TYPE_KEY_TAP    = 6   /**< A downward tapping movement by a finger. */
+};
+
+enum State {
+  STATE_INVALID = 0xFFFFFFFF, /**< An invalid state */
+  STATE_START   = 1,  /**< starting. Just enough has happened to recognize it. */
+  STATE_UPDATE  = 2,  /**< in progress. (Note: not all gestures have updates). */
+  STATE_STOP    = 3  /**< The gesture has completed or stopped. */
+};
+
+
+struct VectorType {
+  float x;
+  float y;
+  float z;
+};
+
+struct PointableType {
+  long      appId; //@key
+  long long id; //@key
+  long long frame; // get id from frame object
+  long long hand; // get id from hand object
+  boolean   isValid;
+  boolean   isTool;
+  boolean   isFinger;
+  boolean   isForemost;
+  boolean   isUnused;
+  RelativeToList relation;
+  VectorType tipPosition; // from origin
+  VectorType tipStabilized; 
+  VectorType tipVelocity; // in millimeters/second
+  VectorType tipDirection; // unit vector (1.0f,0.0f,0.0f) is along the positive x axis
+  float      tipWidth;  // in mm
+  float      tipLength; // in mm
+  float      touchDistance; // [-1 <-> 0 <-> 1] -1 is deep, 1 is just visible, 0 is at
+  float      timeVisible;
+  Zone touchZone;
+};
+  
+struct HandType {
+  long       appId; //@key
+  long long  id; //@key
+  long long  frame; // get id from frame object
+  boolean    isValid;
+  sequence<PointableType, 12> pointables;
+  // virtual sequence<PointableType, 12> fingers;  // done as needed in code
+  // virtual sequence<PointableType, 12> tools;    // done as needed in code
+  VectorType palmPosition; // from origin
+  VectorType palmStabilized; 
+  VectorType palmVelocity;
+  VectorType palmDirection;
+  VectorType palmNormal;
+
+  VectorType sphereCenter; // that would fit the curvature of the hand
+  float      sphereRadius; // that would fit the curvature of the hand
+  float      timeVisible;
+  float      palmRoll;
+  float      palmPitch;
+  float      palmYah;
+};
+
+struct GestureType {
+  long       appId; //@key
+  long long  id; //@key
+  long long  frame; // get from frame object
+  boolean    isValid;
+  Type       type;
+  State      state;
+  long long  durMSec;
+  float      durSec;
+  sequence<HandType, 2> hands;
+  sequence<PointableType, 12> pointables;
+};
+
