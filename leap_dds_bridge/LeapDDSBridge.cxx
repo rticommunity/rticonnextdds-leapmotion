@@ -328,7 +328,7 @@ extern "C" DDSDomainParticipant * publisher_main(int domainId, DDSEntities * ent
     DDSTopic *topic = NULL;
     const char *type_name = NULL;
  
-    entities->domainId = domainId; // used for appId also
+    entities->domainId = domainId; 
 
     /* To customize participant QoS, use 
        the configuration file USER_QOS_PROFILES.xml */
@@ -485,7 +485,7 @@ extern "C" void writer_main(DDSEntities *entities) {
         app_shutdown(entities);
         return;
     }
-    entities->i_hands->appId = entities->domainId;
+    entities->i_hands->appId = entities->appId;
 
     entities->i_gestures = GestureTypeTypeSupport::create_data();
     if (entities->i_gestures == NULL) {
@@ -493,7 +493,7 @@ extern "C" void writer_main(DDSEntities *entities) {
         app_shutdown(entities);
         return;
     }
-    entities->i_gestures->appId = entities->domainId;
+    entities->i_gestures->appId = entities->appId;
 
     return;
 }
